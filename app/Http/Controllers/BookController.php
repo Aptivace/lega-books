@@ -21,8 +21,9 @@ class BookController extends Controller
 
         $search = $request->query("query");
         $books = $books->where(function ($q) use ($search) {
-            $q->where('title', 'LIKE', "%" . $search . "%")
-                ->orWhere('author', 'LIKE', "%" . $search . "%");
+            $q->where('title', 'LIKE', "%" . $search . "%")->orWhereHas('author', function ($q) use ($search) {
+                $q->where('author', 'LIKE', "%" . $search . "%");
+            });
         });
 
 
@@ -32,13 +33,13 @@ class BookController extends Controller
         if ($request->max_price) {
             $books = $books->where('price', '<=', $request->max_price);
         }
-        if ($request->has("min_rating") && !empty($request->min_rating)) {
+        if ($request->min_rating) {
             $books = $books->where('rating', '>=', $request->min_rating);
         }
-        if ($request->has("max_rating") && !empty($request->max_rating)) {
+        if ($request->max_rating) {
             $books = $books->where('rating', '<=', $request->max_rating);
         }
-        if ($request->has("sort") && !empty($request->sort)) {
+        if ($request->sort) {
             if ($request->sort == "desc") {
                 $books = $books->orderBy('rating', 'desc');
             }
